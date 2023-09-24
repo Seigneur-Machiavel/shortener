@@ -132,11 +132,14 @@ const urls = {};
 app.get(['/shorten', '//shorten'], (req, res) => {
     // o = originalUrl
     // s = selfDestruct
-    let { o, s, e, save } = req.query;
+    let { o, s, e, save, name } = req.query;
     if (s == undefined) { s = 0; }
 
-    // Generate a short URL that is not already in use
-    let shortUrl = createKey(nomberOfCharsRequired());
+    // Use the specified name or create a new one
+    let shortUrl = name ? name : createKey(nomberOfCharsRequired());
+    if (urls[shortUrl] && name ) { res.status(409).json({ error: 'Name already taken' }); return; }
+
+    // Verify if the short URL already exists and create a new one if it does
     while (urls[shortUrl]) {
         shortUrl = createKey(nomberOfCharsRequired());
     }
