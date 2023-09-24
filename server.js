@@ -25,7 +25,7 @@ const is_debug = inspector.url() !== undefined ? true : false;
 console.log(`is_debug: ${is_debug}`);
 
 const settings = {
-  p: 4321, // Port
+  p: 4325, // Port
   ar: false, // Auto restart
   da: false, // Disable admin token usage
   ul: is_debug ? false : true, // Use launch folder as subdomain
@@ -108,6 +108,8 @@ app.get('/shorten', (req, res) => {
 
     // Add the URL to the list
     urls[shortUrl] = new redirect(o, s);
+
+    // console.log(`Shorted: ${shortUrl} | o= ${o} | s= ${s}`);
 
     res.json({ shortUrl });
 });
