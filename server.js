@@ -137,6 +137,11 @@ app.get(['/:shortUrl', '//:shortUrl'], (req, res) => {
     }
 });
 
+// Route for "hello world"
+app.get(['/', `//`], (req, res) => {
+    res.send(`Hello World! ${launch_folder}`);
+});
+
 // Route to restart the server && git pull origin main
 if (!is_debug && !settings.da) { // If admin token usage is not disabled
     const restartHandler = (req, res) => { exit_task = "restart"; res.render('simple_msg', {"launch_folder": launch_folder, "message": "Server is restarting..."}); process.exit(0) }
