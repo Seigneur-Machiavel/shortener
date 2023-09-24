@@ -118,7 +118,7 @@ app.get(['/shorten', '//shorten'], (req, res) => {
     // console.log(`Shorted: ${shortUrl} | o= ${o} | s= ${s}`);
 
     // Return the entire short url
-    res.json({ shortUrl: `${req.protocol}://${req.hostname}/${shortUrl}` });
+    res.json({ shortUrl: `https://${req.hostname}/${shortUrl}` });
 });
 
 // Route for redirecting to the original URL
