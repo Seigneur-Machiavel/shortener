@@ -8,13 +8,19 @@ const { exec } = require('child_process');
  * @class redirect
  * @param {string} o originalUrl - the url to redirect to
  * @param {number} s selfDestruct - number of clicks before the url is deleted (default = 0)
+ * @param {number} e expiration - time in seconds before the url is deleted (default = settings.de)
+ * @param {boolean} save - if the url should be saved in the database (default = false)
  * @param {number} c clicks (default = 0)
+ * @param {number} t time (default = Date.now())
  */
 class redirect {
-    constructor(o, s = 0, c = 0) {
+    constructor(o, s = 0, e = settings.de, save = false) {
         this.o = o;
         this.s = s;
-        this.c = c;
+        this.e = e;
+        this.save = save;
+        this.c = 0;
+        this.t = Date.now();
     }
 }
 //#endregion
@@ -31,6 +37,8 @@ const settings = {
   lr: false, // Log routes
   ul: is_debug ? false : true, // Use launch folder as subdomain
   t: "NzQxNzQ2NjEwNjQ0NjQwMzg4XyOg3Q5fJ9v5Kj6Y9o8z0j7z3QJYv6K3c", // admin Token
+  de: 3600, // Default expiration time in seconds (1 hour)
+  infiniteLoopDelay: 10000, // Delay between each infinite loop iteration
 }
 const args = process.argv.slice(2);
 for (let i = 0; i < args.length; i++) {
@@ -49,6 +57,7 @@ for (let i = 0; i < args.length; i++) {
 
       // if string value is valid number
       if (key == "p" && !isNaN(value)) {settings[key] = Number(value); continue;}
+      if (key == "de" && !isNaN(value)) {settings[key] = Number(value); continue;}
 
       // Add the key and value to the launchArguments object
       settings[key] = value;
@@ -88,6 +97,26 @@ function nomberOfCharsRequired() {
     if (urls_length < 218340105584896) { return 9; }
     return 10;
 }
+async function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+async function infiniteLoop() { 
+    while (true) { 
+        await sleep(settings.infiniteLoopDelay);
+        const expired_urls = getListOfExpiredUrls();
+        if (expired_urls.length > 0) {
+            console.log(`Deleting ${expired_urls.length} expired URLs...`);
+            expired_urls.forEach(key => { delete urls[key]; });
+        }
+    }
+}
+function getListOfExpiredUrls() {
+    const expired_urls = [];
+    Object.keys(urls).forEach(key => {
+        const url = urls[key];
+        if (url.e != 0 && url.e <= Math.floor((Date.now() - url.t) / 1000)) { expired_urls.push(key); }
+    });
+    return expired_urls;
+}
+infiniteLoop();
 //#endregion --------------------------------------------------------------
 
 // Use body-parser middleware
@@ -103,7 +132,7 @@ const urls = {};
 app.get(['/shorten', '//shorten'], (req, res) => {
     // o = originalUrl
     // s = selfDestruct
-    let { o, s } = req.query;
+    let { o, s, e, save } = req.query;
     if (s == undefined) { s = 0; }
 
     // Generate a short URL that is not already in use
@@ -113,7 +142,7 @@ app.get(['/shorten', '//shorten'], (req, res) => {
     }
 
     // Add the URL to the list
-    urls[shortUrl] = new redirect(o, s);
+    urls[shortUrl] = new redirect(o, s, e, save);
 
     // console.log(`Shorted: ${shortUrl} | o= ${o} | s= ${s}`);
 
@@ -140,6 +169,29 @@ app.get(['/:shortUrl', '//:shortUrl'], (req, res) => {
         // Delete the URL from the list
         delete urls.shortUrl;
     }
+});
+
+// Route for getting info about a short URL
+app.get(['/info/:shortUrl', '//info/:shortUrl'], (req, res) => {
+    const { shortUrl } = req.params;
+
+    // Find the original URL by its short URL
+    const url = urls[shortUrl];
+    if (!url) { res.status(404).json({ error: 'URL not found - or expired' }); return }
+
+    const url_public_info = {
+        "shortUrl": `https://${req.hostname}/${shortUrl}`,
+        "selfDestruct": url.s,
+        "expiration": url.e,
+        "save": url.save,
+        "clicks": url.c,
+        "remainingClicks": url.s - url.c,
+        "time": url.t,
+        "remainingTime": url.e - Math.floor((Date.now() - url.t) / 1000),
+    }
+
+    // Return the info
+    res.json(url_public_info);
 });
 
 // Route to restart the server && git pull origin main
