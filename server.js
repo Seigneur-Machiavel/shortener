@@ -89,6 +89,14 @@ function nomberOfCharsRequired() {
 }
 //#endregion --------------------------------------------------------------
 
+// Route for instructions
+app.get(['/', `//`], (req, res) => {
+    res.send(`<h1>URL Shortener</h1>`
+    + `<h2>launch_folder: ${launch_folder}</h2>`
+    + `<h2>is_debug: ${is_debug}</h2>`
+    );
+});
+
 // Use body-parser middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -137,11 +145,6 @@ app.get(['/:shortUrl', '//:shortUrl'], (req, res) => {
     }
 });
 
-// Route for "hello world"
-app.get(['/', `//`], (req, res) => {
-    res.send(`Hello World! ${launch_folder}`);
-});
-
 // Route to restart the server && git pull origin main
 if (!is_debug && !settings.da) { // If admin token usage is not disabled
     const restartHandler = (req, res) => { exit_task = "restart"; res.render('simple_msg', {"launch_folder": launch_folder, "message": "Server is restarting..."}); process.exit(0) }
@@ -169,7 +172,7 @@ function logRoutes() {
     });
   
     app.use((req, res, next) => { if (req.method === 'GET') { console.log(`Received GET request for ${req.url}`); } next(); });
-}; if (settings.lr) { logRoutes() };
+}; if (settings.lr || is_debug) { logRoutes() };
 
 // Start the server
 app.listen(settings.p, () => {
