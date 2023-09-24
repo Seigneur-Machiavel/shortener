@@ -166,8 +166,8 @@ app.get(['/:shortUrl', '//:shortUrl'], (req, res) => {
 
     // Verify if the URL should be deleted
     if (url.s != 0 && url.c >= url.s) {
-        // Delete the URL from the list
-        delete urls.shortUrl;
+        // Delete the URL from the list after a delay of 2 seconds
+        setTimeout(() => { delete urls[shortUrl]; }, 2000);
     }
 });
 
