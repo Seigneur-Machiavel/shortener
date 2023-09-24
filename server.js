@@ -28,6 +28,7 @@ const settings = {
   p: 4325, // Port
   ar: false, // Auto restart
   da: false, // Disable admin token usage
+  lr: false, // Log routes
   ul: is_debug ? false : true, // Use launch folder as subdomain
   t: "NzQxNzQ2NjEwNjQ0NjQwMzg4XyOg3Q5fJ9v5Kj6Y9o8z0j7z3QJYv6K3c", // admin Token
 }
@@ -39,6 +40,7 @@ for (let i = 0; i < args.length; i++) {
       // Get the key by removing the "-"
       const key = arg.slice(1);
       if (key == "ar") { settings.ar = true; continue; }
+      if (key == "lr") { settings.lr = true; continue; }
       if (key == "rd") { settings.ul = false; continue; } // [root domain] - Don't use launch folder as subdomain
 
       // Move to the next argument
@@ -144,6 +146,25 @@ if (!is_debug && !settings.da) { // If admin token usage is not disabled
     
     console.log("Admin routes are enabled: /restart, /gitpull");
 }
+
+// Log all routes
+function logRoutes() {
+    const routes = app._router.stack.filter(layer => layer.route).map(layer => {
+      return {
+        path: layer.route.path,
+        methods: Object.keys(layer.route.methods),
+      };
+    });
+    console.log('---');
+    // Affichez les routes dans la console
+    routes.forEach(route => {
+      console.log(`Path: ${route.path}`);
+      console.log(`Methods: ${route.methods.join(', ')}`);
+      console.log('---');
+    });
+  
+    app.use((req, res, next) => { if (req.method === 'GET') { console.log(`Received GET request for ${req.url}`); } next(); });
+}; if (settings.lr) { logRoutes() };
 
 // Start the server
 app.listen(settings.p, () => {
