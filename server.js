@@ -94,7 +94,7 @@ app.use(bodyParser.json());
 const urls = {};
 
 // Route for creating a new short URL
-app.get('/shorten', (req, res) => {
+app.get(['/shorten', '//shorten'], (req, res) => {
     // o = originalUrl
     // s = selfDestruct
     let { o, s } = req.query;
@@ -115,7 +115,7 @@ app.get('/shorten', (req, res) => {
 });
 
 // Route for redirecting to the original URL
-app.get('/:shortUrl', (req, res) => {
+app.get(['/:shortUrl', '//:shortUrl'], (req, res) => {
     const { shortUrl } = req.params;
 
     // Find the original URL by its short URL
