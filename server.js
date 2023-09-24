@@ -90,20 +90,15 @@ function nomberOfCharsRequired() {
 }
 //#endregion --------------------------------------------------------------
 
-// Route for instructions
-app.get(['/', `//`], (req, res) => {
-    res.send(`<h1>URL Shortener</h1>`
-    + `<h2>launch_folder: ${launch_folder}</h2>`
-    + `<h2>is_debug: ${is_debug}</h2>`
-    );
-});
-
 // Use body-parser middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.set('view engine', 'ejs');
+
+// Route to listen root domain (ex: localhost:4321) & replace "launch_folder" by the name of the folder
+app.get(['/', '//'], (req, res) => { res.render('index', {"launch_folder": launch_folder}); });
 
 const urls = {};
-
 // Route for creating a new short URL
 app.get(['/shorten', '//shorten'], (req, res) => {
     // o = originalUrl
