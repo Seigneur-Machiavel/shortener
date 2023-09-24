@@ -78,7 +78,7 @@ function createKey(length) {
     return key;
 }
 function nomberOfCharsRequired() {
-    const urls_length = Object.keys(urls);
+    const urls_length = Object.keys(urls).length;
     if (urls_length < 3844) { return 3; }
     if (urls_length < 238328) { return 4; }
     if (urls_length < 14776336) { return 5; }
@@ -86,6 +86,7 @@ function nomberOfCharsRequired() {
     if (urls_length < 56800235584) { return 7; }
     if (urls_length < 3521614606208) { return 8; }
     if (urls_length < 218340105584896) { return 9; }
+    return 10;
 }
 //#endregion --------------------------------------------------------------
 
