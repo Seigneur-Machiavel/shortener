@@ -39,6 +39,7 @@ const settings = {
   t: "NzQxNzQ2NjEwNjQ0NjQwMzg4XyOg3Q5fJ9v5Kj6Y9o8z0j7z3QJYv6K3c", // admin Token
   de: 3600, // Default expiration time in seconds (1 hour)
   infiniteLoopDelay: 10000, // Delay between each infinite loop iteration
+  ForbiddenShortUrls: ["shorten", "info", "restart", "gitpull", "chat"], // Short urls that can't be used
 }
 const args = process.argv.slice(2);
 for (let i = 0; i < args.length; i++) {
@@ -82,8 +83,12 @@ function rndCharKey() {
     return chars[rnd(0, chars.length - 1)];
 }
 function createKey(length) {
+    // create a key that is not in ForbiddenShortUrls
     let key = "";
-    for (let i = 0; i < length; i++) { key += rndCharKey(); }
+    while (key == "" || settings.ForbiddenShortUrls.includes(key)) {
+        key = "";
+        for (let i = 0; i < length; i++) { key += rndCharKey(); }
+    }
     return key;
 }
 function nomberOfCharsRequired() {
